@@ -131,7 +131,6 @@ async def stop(ctx):
 
 @bot.command()
 async def commands(ctx):
-    if ctx.channel.name != "archipelago-tracking":
-        await ctx.send("Here's a list of commands: <#1516068302776959149>")
+    await ctx.send("Here's a list of commands: <#1516068302776959149>")
 
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
