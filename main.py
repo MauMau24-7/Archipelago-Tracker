@@ -20,6 +20,12 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 tasks = {}
 
 
+async def keepalive(ws):
+    while True:
+        await asyncio.sleep(600)
+        await ws.send(json.dumps([{"cmd": "Bounce", "slots": []}]))
+
+
 async def ap_listener(port, channel):
     uri = f"wss://archipelago.gg:{port}"
     while True:
@@ -68,6 +74,8 @@ async def ap_listener(port, channel):
                     else:
                         continue
                     break
+
+                asyncio.create_task(keepalive(ws))
 
                 async for message in ws:
                     packets = json.loads(message)
