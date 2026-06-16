@@ -20,13 +20,14 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 tasks = {}
 
 
-async def keepalive(ws):
+async def keepalive(ws, ctx, port):
     while True:
         await asyncio.sleep(600)
-        await ws.send(json.dumps([{"cmd": "Bounce", "slots": []}]))
+        await ws.send(json.dumps([{"cmd": "Say", "text": "!players"}]))
+        ctx.send(f"Send package to keep `wss://archipelago.gg:{port}` online")
 
 
-async def ap_listener(port, channel):
+async def ap_listener(port, ctx):
     uri = f"wss://archipelago.gg:{port}"
     while True:
         try:
@@ -75,7 +76,7 @@ async def ap_listener(port, channel):
                         continue
                     break
 
-                asyncio.create_task(keepalive(ws))
+                asyncio.create_task(keepalive(ws, ctx, port))
 
                 async for message in ws:
                     packets = json.loads(message)
@@ -94,14 +95,14 @@ async def ap_listener(port, channel):
                                     text += location_names.get((game, int(segment["text"])), segment["text"])
                                 else:
                                     text += segment["text"]
-                            await channel.send(text)
+                            await ctx.channel.send(text)
         except asyncio.CancelledError:
             break
         except websockets.ConnectionClosed:
-            await channel.send("Connection lost, reconnecting in 5 seconds...")
+            await ctx.channel.send("Connection lost, reconnecting in 5 seconds...")
             await asyncio.sleep(5)
         except Exception as e:
-            await channel.send(f"Error: {e}, reconnecting in 5 seconds...")
+            await ctx.channel.send(f"Error: {e}, reconnecting in 5 seconds...")
             await asyncio.sleep(5)
 
 
@@ -120,7 +121,7 @@ async def start(ctx, *, port):
         await ctx.send("A Tracker is already active in this Channel!")
         return
     await ctx.send(f"Connecting to Archipelago server at `wss://archipelago.gg:{port}`")
-    task = asyncio.create_task(ap_listener(port, ctx.channel))
+    task = asyncio.create_task(ap_listener(port, ctx))
     tasks[ctx.channel.id] = task
 
 
