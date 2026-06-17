@@ -104,6 +104,7 @@ async def ap_listener(port, ctx):
             if reconnectAttempt > 5:
                 await ctx.channel.send(f"Not able to reconnect to wss://archipelago.gg:{port}")
                 stop(ctx)
+                break
             await ctx.channel.send(f"Connection lost, reconnecting in 5 seconds... (Attempt {reconnectAttempt})")
             reconnectAttempt += 1
             await asyncio.sleep(5)
@@ -111,6 +112,7 @@ async def ap_listener(port, ctx):
             if reconnectAttempt > 5:
                 await ctx.channel.send(f"Not able to reconnect to wss://archipelago.gg:{port}")
                 stop(ctx)
+                break
             await ctx.channel.send(f"Error: {e}, reconnecting in 5 seconds... (Attempt {reconnectAttempt})")
             reconnectAttempt += 1
             await asyncio.sleep(5)
