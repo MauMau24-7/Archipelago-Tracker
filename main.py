@@ -29,6 +29,7 @@ reconnectAttempt = 1
 
 
 async def ap_listener(port, ctx):
+    global reconnectAttempt
     uri = f"wss://archipelago.gg:{port}"
     while True:
         try:
@@ -100,7 +101,6 @@ async def ap_listener(port, ctx):
         except asyncio.CancelledError:
             break
         except websockets.ConnectionClosed:
-            global reconnectAttempt
             if reconnectAttempt > 5:
                 await ctx.channel.send(f"Not able to reconnect to wss://archipelago.gg:{port}")
                 stop(ctx)
@@ -108,7 +108,6 @@ async def ap_listener(port, ctx):
             reconnectAttempt += 1
             await asyncio.sleep(5)
         except Exception as e:
-            global reconnectAttempt
             if reconnectAttempt > 5:
                 await ctx.channel.send(f"Not able to reconnect to wss://archipelago.gg:{port}")
                 stop(ctx)
