@@ -88,13 +88,13 @@ async def ap_listener(port, ctx):
                             for segment in packet["data"]:
                                 t = segment.get("type")
                                 if t == "player_id":
-                                    text += players.get(int(segment["text"]), segment["text"])
+                                    text += f"**{players.get(int(segment['text']), segment['text'])}**"
                                 elif t == "item_id":
                                     game = slot_games.get(packet["receiving"])
-                                    text += item_names.get((game, int(segment["text"])), segment["text"])
+                                    text += f"**{item_names.get((game, int(segment['text'])), segment['text'])}**"
                                 elif t == "location_id":
                                     game = slot_games.get(segment["player"])
-                                    text += location_names.get((game, int(segment["text"])), segment["text"])
+                                    text += f"\n> {location_names.get((game, int(segment['text'])), segment['text'])}"
                                 else:
                                     text += segment["text"]
                             await ctx.channel.send(text)
