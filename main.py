@@ -18,13 +18,14 @@ intents.members = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 tasks = {}
+reconnectAttempt = 1
 
 
-async def keepalive(ws, ctx, port):
-    while True:
-        await asyncio.sleep(600)
-        await ws.send(json.dumps([{"cmd": "Say", "text": "!players"}]))
-        ctx.send(f"Send package to keep `wss://archipelago.gg:{port}` online")
+# async def keepalive(ws, ctx, port):
+#     while True:
+#         await asyncio.sleep(600)
+#         await ws.send(json.dumps([{"cmd": "Say", "text": "!players"}]))
+#         ctx.send(f"Send package to keep `wss://archipelago.gg:{port}` online")
 
 
 async def ap_listener(port, ctx):
@@ -76,7 +77,7 @@ async def ap_listener(port, ctx):
                         continue
                     break
 
-                asyncio.create_task(keepalive(ws, ctx, port))
+                # asyncio.create_task(keepalive(ws, ctx, port))
 
                 async for message in ws:
                     packets = json.loads(message)
@@ -99,10 +100,20 @@ async def ap_listener(port, ctx):
         except asyncio.CancelledError:
             break
         except websockets.ConnectionClosed:
-            await ctx.channel.send("Connection lost, reconnecting in 5 seconds...")
+            global reconnectAttempt
+            if reconnectAttempt > 5:
+                await ctx.channel.send(f"Not able to reconnect to wss://archipelago.gg:{port}")
+                stop(ctx)
+            await ctx.channel.send(f"Connection lost, reconnecting in 5 seconds... (Attempt {reconnectAttempt})")
+            reconnectAttempt += 1
             await asyncio.sleep(5)
         except Exception as e:
-            await ctx.channel.send(f"Error: {e}, reconnecting in 5 seconds...")
+            global reconnectAttempt
+            if reconnectAttempt > 5:
+                await ctx.channel.send(f"Not able to reconnect to wss://archipelago.gg:{port}")
+                stop(ctx)
+            await ctx.channel.send(f"Error: {e}, reconnecting in 5 seconds... (Attempt {reconnectAttempt})")
+            reconnectAttempt += 1
             await asyncio.sleep(5)
 
 
