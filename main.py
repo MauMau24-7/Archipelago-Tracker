@@ -95,15 +95,17 @@ async def ap_listener(port, ctx):
                                 elif t == "location_id":
                                     game = slot_games.get(segment["player"])
                                     text += f"\n> {location_names.get((game, int(segment['text'])), segment['text'])}"
-                                else:
-                                    text += segment["text"]
+                                # else:
+                                    # text += segment["text"]
                             await ctx.channel.send(text)
         except asyncio.CancelledError:
             break
         except websockets.ConnectionClosed:
             if reconnectAttempt > 5:
                 await ctx.channel.send(f"Not able to reconnect to wss://archipelago.gg:{port}")
-                stop(ctx)
+                task = tasks.pop(ctx.channel.id, None)
+                if task:
+                    task.cancel()
                 break
             await ctx.channel.send(f"Connection lost, reconnecting in 5 seconds... (Attempt {reconnectAttempt})")
             reconnectAttempt += 1
