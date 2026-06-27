@@ -113,7 +113,9 @@ async def ap_listener(port, ctx):
         except Exception as e:
             if reconnectAttempt > 5:
                 await ctx.channel.send(f"Not able to reconnect to wss://archipelago.gg:{port}")
-                stop(ctx)
+                task = tasks.pop(ctx.channel.id, None)
+                if task:
+                    task.cancel()
                 break
             await ctx.channel.send(f"Error: {e}, reconnecting in 5 seconds... (Attempt {reconnectAttempt})")
             reconnectAttempt += 1
