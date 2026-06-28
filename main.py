@@ -21,14 +21,14 @@ tasks = {}
 reconnectAttempt = 1
 
 
-# async def keepalive(ws, ctx, port):
+# async def keepalive(ws, ctx, port):       # Not working as intended
 #     while True:
 #         await asyncio.sleep(600)
 #         await ws.send(json.dumps([{"cmd": "Say", "text": "!players"}]))
 #         ctx.send(f"Send package to keep `wss://archipelago.gg:{port}` online")
 
 
-async def ap_listener(port, ctx):
+async def ap_listener(port, name, ctx):
     global reconnectAttempt
     uri = f"wss://archipelago.gg:{port}"
     while True:
@@ -41,7 +41,7 @@ async def ap_listener(port, ctx):
                 connect_packet = json.dumps([{
                     "cmd": "Connect",
                     "game": "",
-                    "name": "TheSillyBlaze",
+                    "name": name,
                     "password": "",
                     "version": {"major": 0, "minor": 6, "build": 7, "class": "Version"},
                     "items_handling": 0,
@@ -69,10 +69,10 @@ async def ap_listener(port, ctx):
                     for packet in raw:
                         if packet["cmd"] == "DataPackage":
                             for game, gdata in packet["data"]["games"].items():
-                                for name, id in gdata["item_name_to_id"].items():
-                                    item_names[(game, id)] = name
-                                for name, id in gdata["location_name_to_id"].items():
-                                    location_names[(game, id)] = name
+                                for item_name, item_id in gdata["item_name_to_id"].items():
+                                    item_names[(game, item_id)] = item_name
+                                for loc_name, loc_id in gdata["location_name_to_id"].items():
+                                    location_names[(game, loc_id)] = loc_name
                             break
                     else:
                         continue
@@ -128,7 +128,7 @@ async def on_ready():
 
 
 @bot.command()
-async def start(ctx, *, port):
+async def start(ctx, port: int, *, name: str):
     print(tasks)
     if ctx.channel.name != "archipelago-tracking":
         await ctx.send("This Command ist only allowed in <#1515806957615714457>!")
@@ -137,7 +137,7 @@ async def start(ctx, *, port):
         await ctx.send("A Tracker is already active in this Channel!")
         return
     await ctx.send(f"Connecting to Archipelago server at `wss://archipelago.gg:{port}`")
-    task = asyncio.create_task(ap_listener(port, ctx))
+    task = asyncio.create_task(ap_listener(port, name, ctx))
     tasks[ctx.channel.id] = task
 
 
