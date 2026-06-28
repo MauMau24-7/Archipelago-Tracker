@@ -95,8 +95,10 @@ async def ap_listener(port, name, ctx):
                                 elif t == "location_id":
                                     game = slot_games.get(segment["player"])
                                     text += f"\n> {location_names.get((game, int(segment['text'])), segment['text'])}"
-                                # else:
-                                    # text += segment["text"]
+                                else:
+                                    t_text = segment["text"]
+                                    if t_text not in ("(", ")"):
+                                        text += t_text
                             await ctx.channel.send(text)
         except asyncio.CancelledError:
             break
